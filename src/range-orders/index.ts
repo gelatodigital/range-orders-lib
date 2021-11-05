@@ -7,7 +7,11 @@ import {
 import { Provider } from "@ethersproject/abstract-provider";
 import { Signer } from "@ethersproject/abstract-signer";
 import { RangeOrder } from "../contracts/types";
-import { getRangeOrder, getUniswapV3Pool, getECR20 } from "../contracts";
+import {
+  getRangeOrder,
+  getUniswapV3Pool,
+  //  getECR20
+} from "../contracts";
 import { SUBGRAPH_URL } from "../constants";
 import {
   queryRangeOrder,
@@ -16,9 +20,9 @@ import {
   queryCancelledRangeOrderByUser,
 } from "../utils/queries";
 import { BigNumber, ContractTransaction, ethers } from "ethers";
-import { Price, Token } from "@uniswap/sdk-core";
+// import { Price, Token } from "@uniswap/sdk-core";
 import JSBI from "jsbi";
-import { tickToPrice } from "@uniswap/v3-sdk";
+// import { tickToPrice } from "@uniswap/v3-sdk";
 
 export class GelatoRangeOrder {
   private _chainId: ChainId;
