@@ -26,7 +26,7 @@ export const SUBGRAPH_URL = {
   [CHAIN_ID.MATIC]:
     "https://api.thegraph.com/subgraphs/name/gelatodigital/range-orders-matic",
   [CHAIN_ID.GOERLI]:
-    "https://api.thegraph.com/subgraphs/name/gelatodigital/limit-orders-goerli",
+    "https://api.thegraph.com/subgraphs/name/gelatodigital/range-orders-goerli",
 };
 
 export const GELATO_RANGE_ORDERS_ADDRESS = {
