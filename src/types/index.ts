@@ -16,9 +16,9 @@ export type RangeOrderPayload = {
 };
 
 export enum RangeOrderStatus {
-  Submitted,
-  Executed,
-  Cancelled,
+  Submitted = "submitted",
+  Executed = "executed",
+  Cancelled = "cancelled",
 }
 
 export type RangeOrderData = {

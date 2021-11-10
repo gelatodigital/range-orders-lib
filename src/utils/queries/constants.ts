@@ -107,7 +107,7 @@ export const GET_EXECUTED_RANGE_ORDER_BY_CREATOR = gql`
 
 export const GET_CANCELLED_RANGE_ORDER_BY_CREATOR = gql`
   query getCancelledRangeOrderByUser($creator: ID) {
-    rangeOrders(where: { creator: $creator, status: executed }) {
+    rangeOrders(where: { creator: $creator, status: cancelled }) {
       id
       status
       creator
