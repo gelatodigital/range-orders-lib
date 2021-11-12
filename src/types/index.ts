@@ -39,9 +39,6 @@ export type RangeOrderData = {
   amount0: BigNumber | undefined;
   amount1: BigNumber | undefined;
   pool: string | undefined;
-  token0: string | undefined;
-  token1: string | undefined;
-  poolFee: BigNumber | undefined;
   submittedTxHash: BytesLike;
   executedTxHash: BytesLike | undefined;
   cancelledTxHash: BytesLike | undefined;

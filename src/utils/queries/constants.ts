@@ -20,9 +20,6 @@ export const GET_RANGE_ORDER_BY_TOKEN_ID = gql`
       amount0
       amount1
       pool
-      token0
-      token1
-      poolFee
       submittedTxHash
       executedTxHash
       cancelledTxHash
@@ -55,9 +52,6 @@ export const GET_OPEN_RANGE_ORDER_BY_CREATOR = gql`
       amount0
       amount1
       pool
-      token0
-      token1
-      poolFee
       submittedTxHash
       executedTxHash
       cancelledTxHash
@@ -90,9 +84,6 @@ export const GET_EXECUTED_RANGE_ORDER_BY_CREATOR = gql`
       amount0
       amount1
       pool
-      token0
-      token1
-      poolFee
       submittedTxHash
       executedTxHash
       cancelledTxHash
@@ -125,9 +116,6 @@ export const GET_CANCELLED_RANGE_ORDER_BY_CREATOR = gql`
       amount0
       amount1
       pool
-      token0
-      token1
-      poolFee
       submittedTxHash
       executedTxHash
       cancelledTxHash
