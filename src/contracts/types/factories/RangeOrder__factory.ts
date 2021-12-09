@@ -8,25 +8,126 @@ import type { RangeOrder, RangeOrderInterface } from "../RangeOrder";
 
 const _abi = [
   {
+    anonymous: false,
     inputs: [
       {
-        internalType: "contract IEjectLP",
-        name: "eject_",
-        type: "address",
-      },
-      {
-        internalType: "contract IWETH9",
-        name: "WETH9_",
-        type: "address",
-      },
-      {
+        indexed: true,
         internalType: "address",
-        name: "ejectResolver_",
+        name: "previousOwner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
         type: "address",
       },
     ],
+    name: "OwnershipTransferred",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousImplementation",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newImplementation",
+        type: "address",
+      },
+    ],
+    name: "ProxyImplementationUpdated",
+    type: "event",
+  },
+  {
+    stateMutability: "payable",
+    type: "fallback",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes4",
+        name: "id",
+        type: "bytes4",
+      },
+    ],
+    name: "supportsInterface",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "transferOwnership",
+    outputs: [],
     stateMutability: "nonpayable",
-    type: "constructor",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newImplementation",
+        type: "address",
+      },
+    ],
+    name: "upgradeTo",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newImplementation",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+    ],
+    name: "upgradeToAndCall",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    stateMutability: "payable",
+    type: "receive",
   },
   {
     anonymous: false,
@@ -45,36 +146,38 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "address",
-        name: "token0",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "token1",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint24",
-        name: "fee",
-        type: "uint24",
-      },
-      {
-        indexed: false,
         internalType: "uint256",
         name: "amountIn",
         type: "uint256",
       },
+    ],
+    name: "LogSetRangeOrder",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
       {
         indexed: false,
         internalType: "address",
-        name: "creator",
+        name: "account",
         type: "address",
       },
     ],
-    name: "LogSetRangeOrder",
+    name: "Paused",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "Unpaused",
     type: "event",
   },
   {
@@ -100,7 +203,7 @@ const _abi = [
       {
         components: [
           {
-            internalType: "address",
+            internalType: "contract IUniswapV3Pool",
             name: "pool",
             type: "address",
           },
@@ -144,6 +247,11 @@ const _abi = [
         name: "params_",
         type: "tuple",
       },
+      {
+        internalType: "uint256",
+        name: "startTime_",
+        type: "uint256",
+      },
     ],
     name: "cancelRangeOrder",
     outputs: [],
@@ -165,15 +273,9 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "ejectResolver",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
+    name: "initialize",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -211,11 +313,44 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "pause",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "paused",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "rangeOrderResolver",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         components: [
           {
-            internalType: "address",
+            internalType: "contract IUniswapV3Pool",
             name: "pool",
             type: "address",
           },
@@ -264,6 +399,34 @@ const _abi = [
     outputs: [],
     stateMutability: "payable",
     type: "function",
+  },
+  {
+    inputs: [],
+    name: "unpause",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "implementationAddress",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "ownerAddress",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+    ],
+    stateMutability: "payable",
+    type: "constructor",
   },
 ];
 

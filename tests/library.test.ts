@@ -106,7 +106,10 @@ describe("Library Test", () => {
     else if (results[0])
       expect(expectedPrice.toString()).to.be.eq(
         (
-          await gelatoRangeOrder.getExchangeRate(results[0].pool as string)
+          await gelatoRangeOrder.getExchangeRate(
+            results[0].pool as string,
+            false
+          )
         ).toString()
       );
   });
@@ -123,7 +126,7 @@ describe("Library Test", () => {
     else if (results[0])
       console.log(
         (
-          await gelatoRangeOrder.getFeeAdjustedMinReturn({
+          await gelatoRangeOrder.getMinReturn({
             pool: results[0].pool as string,
             zeroForOne: results[0].zeroForOne as boolean,
             ejectDust: results[0].ejectDust,
@@ -153,7 +156,8 @@ describe("Library Test", () => {
       console.log(
         await gelatoRangeOrder.getNearTicks(
           results[0].pool as string,
-          ethers.utils.parseUnits("60", 18)
+          ethers.utils.parseUnits("60", 18),
+          false
         )
       );
     }

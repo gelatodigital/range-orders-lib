@@ -22,14 +22,37 @@ import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
 
 interface RangeOrderInterface extends ethers.utils.Interface {
   functions: {
+    "owner()": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
+    "upgradeTo(address)": FunctionFragment;
+    "upgradeToAndCall(address,bytes)": FunctionFragment;
     "WETH9()": FunctionFragment;
-    "cancelRangeOrder(uint256,(address,bool,bool,int24,uint256,uint256,address,uint256))": FunctionFragment;
+    "cancelRangeOrder(uint256,(address,bool,bool,int24,uint256,uint256,address,uint256),uint256)": FunctionFragment;
     "eject()": FunctionFragment;
-    "ejectResolver()": FunctionFragment;
+    "initialize()": FunctionFragment;
     "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
+    "pause()": FunctionFragment;
+    "paused()": FunctionFragment;
+    "rangeOrderResolver()": FunctionFragment;
     "setRangeOrder((address,bool,bool,int24,uint256,uint256,address,uint256))": FunctionFragment;
+    "unpause()": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "supportsInterface",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [string]
+  ): string;
+  encodeFunctionData(functionFragment: "upgradeTo", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "upgradeToAndCall",
+    values: [string, BytesLike]
+  ): string;
   encodeFunctionData(functionFragment: "WETH9", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "cancelRangeOrder",
@@ -44,17 +67,24 @@ interface RangeOrderInterface extends ethers.utils.Interface {
         minAmountOut: BigNumberish;
         receiver: string;
         maxFeeAmount: BigNumberish;
-      }
+      },
+      BigNumberish
     ]
   ): string;
   encodeFunctionData(functionFragment: "eject", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "ejectResolver",
+    functionFragment: "initialize",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "onERC721Received",
     values: [string, string, BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(functionFragment: "pause", values?: undefined): string;
+  encodeFunctionData(functionFragment: "paused", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "rangeOrderResolver",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "setRangeOrder",
@@ -71,44 +101,82 @@ interface RangeOrderInterface extends ethers.utils.Interface {
       }
     ]
   ): string;
+  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
 
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "upgradeTo", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeToAndCall",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "WETH9", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "cancelRangeOrder",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "eject", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "ejectResolver",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "onERC721Received",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "rangeOrderResolver",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "setRangeOrder",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
 
   events: {
-    "LogSetRangeOrder(uint256,address,address,address,uint24,uint256,address)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
+    "ProxyImplementationUpdated(address,address)": EventFragment;
+    "LogSetRangeOrder(uint256,address,uint256)": EventFragment;
+    "Paused(address)": EventFragment;
+    "Unpaused(address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProxyImplementationUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LogSetRangeOrder"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
 }
 
-export type LogSetRangeOrderEvent = TypedEvent<
-  [BigNumber, string, string, string, number, BigNumber, string] & {
-    tokenId: BigNumber;
-    pool: string;
-    token0: string;
-    token1: string;
-    fee: number;
-    amountIn: BigNumber;
-    creator: string;
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string] & { previousOwner: string; newOwner: string }
+>;
+
+export type ProxyImplementationUpdatedEvent = TypedEvent<
+  [string, string] & {
+    previousImplementation: string;
+    newImplementation: string;
   }
 >;
+
+export type LogSetRangeOrderEvent = TypedEvent<
+  [BigNumber, string, BigNumber] & {
+    tokenId: BigNumber;
+    pool: string;
+    amountIn: BigNumber;
+  }
+>;
+
+export type PausedEvent = TypedEvent<[string] & { account: string }>;
+
+export type UnpausedEvent = TypedEvent<[string] & { account: string }>;
 
 export class RangeOrder extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -154,6 +222,29 @@ export class RangeOrder extends BaseContract {
   interface: RangeOrderInterface;
 
   functions: {
+    owner(overrides?: CallOverrides): Promise<[string]>;
+
+    supportsInterface(
+      id: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    upgradeTo(
+      newImplementation: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    upgradeToAndCall(
+      newImplementation: string,
+      data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     WETH9(overrides?: CallOverrides): Promise<[string]>;
 
     cancelRangeOrder(
@@ -168,12 +259,15 @@ export class RangeOrder extends BaseContract {
         receiver: string;
         maxFeeAmount: BigNumberish;
       },
+      startTime_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     eject(overrides?: CallOverrides): Promise<[string]>;
 
-    ejectResolver(overrides?: CallOverrides): Promise<[string]>;
+    initialize(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     onERC721Received(
       arg0: string,
@@ -182,6 +276,14 @@ export class RangeOrder extends BaseContract {
       arg3: BytesLike,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    pause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    paused(overrides?: CallOverrides): Promise<[boolean]>;
+
+    rangeOrderResolver(overrides?: CallOverrides): Promise<[string]>;
 
     setRangeOrder(
       params_: {
@@ -196,7 +298,31 @@ export class RangeOrder extends BaseContract {
       },
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    unpause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
+
+  owner(overrides?: CallOverrides): Promise<string>;
+
+  supportsInterface(id: BytesLike, overrides?: CallOverrides): Promise<boolean>;
+
+  transferOwnership(
+    newOwner: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  upgradeTo(
+    newImplementation: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  upgradeToAndCall(
+    newImplementation: string,
+    data: BytesLike,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   WETH9(overrides?: CallOverrides): Promise<string>;
 
@@ -212,12 +338,15 @@ export class RangeOrder extends BaseContract {
       receiver: string;
       maxFeeAmount: BigNumberish;
     },
+    startTime_: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   eject(overrides?: CallOverrides): Promise<string>;
 
-  ejectResolver(overrides?: CallOverrides): Promise<string>;
+  initialize(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   onERC721Received(
     arg0: string,
@@ -226,6 +355,14 @@ export class RangeOrder extends BaseContract {
     arg3: BytesLike,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  pause(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  paused(overrides?: CallOverrides): Promise<boolean>;
+
+  rangeOrderResolver(overrides?: CallOverrides): Promise<string>;
 
   setRangeOrder(
     params_: {
@@ -241,7 +378,34 @@ export class RangeOrder extends BaseContract {
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  unpause(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
+    owner(overrides?: CallOverrides): Promise<string>;
+
+    supportsInterface(
+      id: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    upgradeTo(
+      newImplementation: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    upgradeToAndCall(
+      newImplementation: string,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     WETH9(overrides?: CallOverrides): Promise<string>;
 
     cancelRangeOrder(
@@ -256,12 +420,13 @@ export class RangeOrder extends BaseContract {
         receiver: string;
         maxFeeAmount: BigNumberish;
       },
+      startTime_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     eject(overrides?: CallOverrides): Promise<string>;
 
-    ejectResolver(overrides?: CallOverrides): Promise<string>;
+    initialize(overrides?: CallOverrides): Promise<void>;
 
     onERC721Received(
       arg0: string,
@@ -270,6 +435,12 @@ export class RangeOrder extends BaseContract {
       arg3: BytesLike,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    pause(overrides?: CallOverrides): Promise<void>;
+
+    paused(overrides?: CallOverrides): Promise<boolean>;
+
+    rangeOrderResolver(overrides?: CallOverrides): Promise<string>;
 
     setRangeOrder(
       params_: {
@@ -284,53 +455,98 @@ export class RangeOrder extends BaseContract {
       },
       overrides?: CallOverrides
     ): Promise<void>;
+
+    unpause(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
-    "LogSetRangeOrder(uint256,address,address,address,uint24,uint256,address)"(
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: string | null,
+      newOwner?: string | null
+    ): TypedEventFilter<
+      [string, string],
+      { previousOwner: string; newOwner: string }
+    >;
+
+    OwnershipTransferred(
+      previousOwner?: string | null,
+      newOwner?: string | null
+    ): TypedEventFilter<
+      [string, string],
+      { previousOwner: string; newOwner: string }
+    >;
+
+    "ProxyImplementationUpdated(address,address)"(
+      previousImplementation?: string | null,
+      newImplementation?: string | null
+    ): TypedEventFilter<
+      [string, string],
+      { previousImplementation: string; newImplementation: string }
+    >;
+
+    ProxyImplementationUpdated(
+      previousImplementation?: string | null,
+      newImplementation?: string | null
+    ): TypedEventFilter<
+      [string, string],
+      { previousImplementation: string; newImplementation: string }
+    >;
+
+    "LogSetRangeOrder(uint256,address,uint256)"(
       tokenId?: BigNumberish | null,
       pool?: null,
-      token0?: null,
-      token1?: null,
-      fee?: null,
-      amountIn?: null,
-      creator?: null
+      amountIn?: null
     ): TypedEventFilter<
-      [BigNumber, string, string, string, number, BigNumber, string],
-      {
-        tokenId: BigNumber;
-        pool: string;
-        token0: string;
-        token1: string;
-        fee: number;
-        amountIn: BigNumber;
-        creator: string;
-      }
+      [BigNumber, string, BigNumber],
+      { tokenId: BigNumber; pool: string; amountIn: BigNumber }
     >;
 
     LogSetRangeOrder(
       tokenId?: BigNumberish | null,
       pool?: null,
-      token0?: null,
-      token1?: null,
-      fee?: null,
-      amountIn?: null,
-      creator?: null
+      amountIn?: null
     ): TypedEventFilter<
-      [BigNumber, string, string, string, number, BigNumber, string],
-      {
-        tokenId: BigNumber;
-        pool: string;
-        token0: string;
-        token1: string;
-        fee: number;
-        amountIn: BigNumber;
-        creator: string;
-      }
+      [BigNumber, string, BigNumber],
+      { tokenId: BigNumber; pool: string; amountIn: BigNumber }
     >;
+
+    "Paused(address)"(
+      account?: null
+    ): TypedEventFilter<[string], { account: string }>;
+
+    Paused(account?: null): TypedEventFilter<[string], { account: string }>;
+
+    "Unpaused(address)"(
+      account?: null
+    ): TypedEventFilter<[string], { account: string }>;
+
+    Unpaused(account?: null): TypedEventFilter<[string], { account: string }>;
   };
 
   estimateGas: {
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    supportsInterface(
+      id: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    upgradeTo(
+      newImplementation: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    upgradeToAndCall(
+      newImplementation: string,
+      data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     WETH9(overrides?: CallOverrides): Promise<BigNumber>;
 
     cancelRangeOrder(
@@ -345,12 +561,15 @@ export class RangeOrder extends BaseContract {
         receiver: string;
         maxFeeAmount: BigNumberish;
       },
+      startTime_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     eject(overrides?: CallOverrides): Promise<BigNumber>;
 
-    ejectResolver(overrides?: CallOverrides): Promise<BigNumber>;
+    initialize(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     onERC721Received(
       arg0: string,
@@ -359,6 +578,14 @@ export class RangeOrder extends BaseContract {
       arg3: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    pause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    paused(overrides?: CallOverrides): Promise<BigNumber>;
+
+    rangeOrderResolver(overrides?: CallOverrides): Promise<BigNumber>;
 
     setRangeOrder(
       params_: {
@@ -373,9 +600,36 @@ export class RangeOrder extends BaseContract {
       },
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    unpause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    supportsInterface(
+      id: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    upgradeTo(
+      newImplementation: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    upgradeToAndCall(
+      newImplementation: string,
+      data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     WETH9(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     cancelRangeOrder(
@@ -390,18 +644,31 @@ export class RangeOrder extends BaseContract {
         receiver: string;
         maxFeeAmount: BigNumberish;
       },
+      startTime_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     eject(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    ejectResolver(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    initialize(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     onERC721Received(
       arg0: string,
       arg1: string,
       arg2: BigNumberish,
       arg3: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    pause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    rangeOrderResolver(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -417,6 +684,10 @@ export class RangeOrder extends BaseContract {
         maxFeeAmount: BigNumberish;
       },
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    unpause(
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

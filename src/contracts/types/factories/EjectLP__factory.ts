@@ -8,30 +8,126 @@ import type { EjectLP, EjectLPInterface } from "../EjectLP";
 
 const _abi = [
   {
+    anonymous: false,
     inputs: [
       {
-        internalType: "contract INonfungiblePositionManager",
-        name: "nftPositions_",
-        type: "address",
-      },
-      {
+        indexed: true,
         internalType: "address",
-        name: "factory_",
+        name: "previousOwner",
         type: "address",
       },
       {
-        internalType: "contract IPokeMe",
-        name: "pokeMe_",
-        type: "address",
-      },
-      {
+        indexed: true,
         internalType: "address",
-        name: "gelato_",
+        name: "newOwner",
         type: "address",
       },
     ],
+    name: "OwnershipTransferred",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousImplementation",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newImplementation",
+        type: "address",
+      },
+    ],
+    name: "ProxyImplementationUpdated",
+    type: "event",
+  },
+  {
+    stateMutability: "payable",
+    type: "fallback",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes4",
+        name: "id",
+        type: "bytes4",
+      },
+    ],
+    name: "supportsInterface",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "transferOwnership",
+    outputs: [],
     stateMutability: "nonpayable",
-    type: "constructor",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newImplementation",
+        type: "address",
+      },
+    ],
+    name: "upgradeTo",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newImplementation",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+    ],
+    name: "upgradeToAndCall",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    stateMutability: "payable",
+    type: "receive",
   },
   {
     anonymous: false,
@@ -139,10 +235,16 @@ const _abi = [
             type: "uint256",
           },
         ],
-        indexed: true,
+        indexed: false,
         internalType: "struct OrderParams",
         name: "orderParams",
         type: "tuple",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "startTime",
+        type: "uint256",
       },
       {
         indexed: false,
@@ -152,6 +254,32 @@ const _abi = [
       },
     ],
     name: "LogSetEject",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "Paused",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
+    ],
+    name: "Unpaused",
     type: "event",
   },
   {
@@ -201,6 +329,11 @@ const _abi = [
           {
             internalType: "uint256",
             name: "maxFeeAmount",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "startTime",
             type: "uint256",
           },
         ],
@@ -284,6 +417,11 @@ const _abi = [
             name: "maxFeeAmount",
             type: "uint256",
           },
+          {
+            internalType: "uint256",
+            name: "startTime",
+            type: "uint256",
+          },
         ],
         internalType: "struct Order",
         name: "order_",
@@ -293,6 +431,19 @@ const _abi = [
     name: "cancel",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "duration",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -344,6 +495,11 @@ const _abi = [
             name: "maxFeeAmount",
             type: "uint256",
           },
+          {
+            internalType: "uint256",
+            name: "startTime",
+            type: "uint256",
+          },
         ],
         internalType: "struct Order",
         name: "order_",
@@ -376,12 +532,70 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "initialize",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "minimumFee",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address[]",
+        name: "tokens_",
+        type: "address[]",
+      },
+      {
+        internalType: "address",
+        name: "recipient_",
+        type: "address",
+      },
+    ],
+    name: "mulipleRetrieveDust",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "nftPositions",
     outputs: [
       {
         internalType: "contract INonfungiblePositionManager",
         name: "",
         type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "pause",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "paused",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -398,6 +612,24 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "token_",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "recipient_",
+        type: "address",
+      },
+    ],
+    name: "retrieveDust",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -462,6 +694,32 @@ const _abi = [
     ],
     name: "schedule",
     outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "duration_",
+        type: "uint256",
+      },
+    ],
+    name: "setDuration",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "minimumFee_",
+        type: "uint256",
+      },
+    ],
+    name: "setMinimumFee",
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -483,6 +741,34 @@ const _abi = [
     ],
     stateMutability: "view",
     type: "function",
+  },
+  {
+    inputs: [],
+    name: "unpause",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "implementationAddress",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "ownerAddress",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+    ],
+    stateMutability: "payable",
+    type: "constructor",
   },
 ];
 

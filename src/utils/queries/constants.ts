@@ -8,10 +8,9 @@ export const GET_RANGE_ORDER_BY_TOKEN_ID = gql`
       creator
       tickThreshold
       zeroForOne
-      ejectDust
+      startTime
+      expiryTime
       amountIn
-      amount0Min
-      amount1Min
       receiver
       feeToken
       resolver
@@ -40,10 +39,9 @@ export const GET_OPEN_RANGE_ORDER_BY_CREATOR = gql`
       creator
       tickThreshold
       zeroForOne
-      ejectDust
+      startTime
+      expiryTime
       amountIn
-      amount0Min
-      amount1Min
       receiver
       feeToken
       resolver
@@ -72,10 +70,9 @@ export const GET_EXECUTED_RANGE_ORDER_BY_CREATOR = gql`
       creator
       tickThreshold
       zeroForOne
-      ejectDust
+      startTime
+      expiryTime
       amountIn
-      amount0Min
-      amount1Min
       receiver
       feeToken
       resolver
@@ -104,10 +101,9 @@ export const GET_CANCELLED_RANGE_ORDER_BY_CREATOR = gql`
       creator
       tickThreshold
       zeroForOne
-      ejectDust
+      startTime
+      expiryTime
       amountIn
-      amount0Min
-      amount1Min
       receiver
       feeToken
       resolver

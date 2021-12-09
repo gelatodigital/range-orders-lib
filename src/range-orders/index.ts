@@ -72,16 +72,21 @@ export class GelatoRangeOrder {
 
   public async cancelRangeOrder(
     tokenId: BigNumber,
-    rangeOrderPayload: RangeOrderPayload
+    rangeOrderPayload: RangeOrderPayload,
+    startTime: number
   ): Promise<ContractTransaction | undefined> {
     if (this._signer)
       return this._gelatoRangeOrders
         .connect(this._signer as Signer)
-        .cancelRangeOrder(tokenId, rangeOrderPayload);
+        .cancelRangeOrder(tokenId, rangeOrderPayload, startTime);
     throw new Error("No Signer");
   }
 
-  public async getExchangeRate(pool: string): Promise<BigNumber> {
+  // Formula : https://ethereum.stackexchange.com/a/112587 and https://github.com/Uniswap/v3-sdk/issues/40#issuecomment-852351109
+  public async getExchangeRate(
+    pool: string,
+    invert: boolean
+  ): Promise<BigNumber> {
     // 18 decimals precision price
     const poolC = getUniswapV3Pool(pool, this.provider);
     const token0 = getECR20(
@@ -94,27 +99,49 @@ export class GelatoRangeOrder {
     );
     const sqrtPriceX96: JSBI = JSBI.BigInt((await poolC.slot0()).sqrtPriceX96);
 
-    return BigNumber.from(
-      JSBI.divide(
-        JSBI.multiply(
-          JSBI.multiply(sqrtPriceX96, sqrtPriceX96),
+    return invert
+      ? BigNumber.from(
+          JSBI.multiply(
+            JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(18)),
+            JSBI.divide(
+              JSBI.exponentiate(JSBI.BigInt(2), JSBI.BigInt(192)),
+              JSBI.multiply(
+                JSBI.multiply(sqrtPriceX96, sqrtPriceX96),
+                JSBI.divide(
+                  JSBI.exponentiate(
+                    JSBI.BigInt(10),
+                    JSBI.BigInt(await token0.decimals())
+                  ),
+                  JSBI.exponentiate(
+                    JSBI.BigInt(10),
+                    JSBI.BigInt(await token1.decimals())
+                  )
+                )
+              )
+            )
+          ).toString()
+        )
+      : BigNumber.from(
           JSBI.divide(
             JSBI.multiply(
-              JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(18)),
-              JSBI.exponentiate(
-                JSBI.BigInt(10),
-                JSBI.BigInt(await token0.decimals())
+              JSBI.multiply(sqrtPriceX96, sqrtPriceX96),
+              JSBI.divide(
+                JSBI.multiply(
+                  JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(18)),
+                  JSBI.exponentiate(
+                    JSBI.BigInt(10),
+                    JSBI.BigInt(await token0.decimals())
+                  )
+                ),
+                JSBI.exponentiate(
+                  JSBI.BigInt(10),
+                  JSBI.BigInt(await token1.decimals())
+                )
               )
             ),
-            JSBI.exponentiate(
-              JSBI.BigInt(10),
-              JSBI.BigInt(await token1.decimals())
-            )
-          )
-        ),
-        JSBI.exponentiate(JSBI.BigInt(2), JSBI.BigInt(192))
-      ).toString()
-    );
+            JSBI.exponentiate(JSBI.BigInt(2), JSBI.BigInt(192))
+          ).toString()
+        );
   }
 
   public async isActiveRangeOrder(tokenId: BigNumber): Promise<boolean> {
@@ -139,7 +166,7 @@ export class GelatoRangeOrder {
   }
 
   // 18 decimals precision.
-  public async getFeeAdjustedMinReturn(
+  public async getMinReturn(
     rangeOrderPayload: RangeOrderPayload
   ): Promise<BigNumber> {
     const pool = getUniswapV3Pool(rangeOrderPayload.pool, this.provider);
@@ -192,15 +219,6 @@ export class GelatoRangeOrder {
     const decimals = rangeOrderPayload.zeroForOne
       ? [await token1.decimals(), await token0.decimals()]
       : [await token0.decimals(), await token1.decimals()];
-    let fees18: BigNumber;
-    if (decimals[0] > 18)
-      fees18 = rangeOrderPayload.maxFeeAmount.div(
-        ethers.utils.parseUnits("1", decimals[0] - 18)
-      );
-    else
-      fees18 = rangeOrderPayload.maxFeeAmount.div(
-        ethers.utils.parseUnits("1", 18 - decimals[0])
-      );
 
     let amountIn18: BigNumber;
     if (decimals[1] > 18)
@@ -213,19 +231,14 @@ export class GelatoRangeOrder {
       );
 
     return rangeOrderPayload.zeroForOne
-      ? meanPrice
-          .mul(amountIn18)
-          .div(ethers.utils.parseUnits("1", 18))
-          .sub(fees18)
-      : amountIn18
-          .mul(ethers.utils.parseUnits("1", 18))
-          .div(meanPrice)
-          .sub(fees18);
+      ? meanPrice.mul(amountIn18).div(ethers.utils.parseUnits("1", 18))
+      : amountIn18.mul(ethers.utils.parseUnits("1", 18)).div(meanPrice);
   }
 
   public async getNearTicks(
     poolAddr: string,
-    price: BigNumber
+    price: BigNumber, // 18 decimal precision
+    invert: boolean
   ): Promise<{ lower: number; upper: number }> {
     const pool = getUniswapV3Pool(poolAddr, this.provider);
     const token0 = getECR20(
@@ -236,10 +249,17 @@ export class GelatoRangeOrder {
       await pool.token1(),
       this._signer ? this._signer : this.provider
     );
+
     // sqrtPriceX96 = sqrt(price) * 2 ** 96
     const sqrtPriceX96 = JSBI.divide(
       JSBI.multiply(
-        sqrt(JSBI.BigInt(price.toString())),
+        sqrt(
+          JSBI.BigInt(
+            invert
+              ? ethers.utils.parseUnits("1", 18).pow(2).div(price).toString()
+              : price.toString()
+          )
+        ),
         JSBI.exponentiate(JSBI.BigInt(2), JSBI.BigInt(96))
       ),
       sqrt(
