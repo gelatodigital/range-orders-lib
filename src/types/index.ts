@@ -7,10 +7,8 @@ export type ChainId = 1 | 5 | 10 | 137 | 42161;
 export type RangeOrderPayload = {
   pool: string;
   zeroForOne: boolean;
-  ejectDust: boolean;
   tickThreshold: number;
   amountIn: BigNumber;
-  minAmountOut: BigNumber;
   receiver: string;
   maxFeeAmount: BigNumber;
 };
@@ -27,10 +25,9 @@ export type RangeOrderData = {
   creator: string;
   tickThreshold: BigNumber;
   zeroForOne: boolean;
-  ejectDust: boolean;
+  startTime: BigNumber;
+  expiryTime: BigNumber;
   amountIn: BigNumber;
-  amount0Min: BigNumber | undefined;
-  amount1Min: BigNumber | undefined;
   receiver: string;
   feeToken: string;
   resolver: string;

@@ -100,7 +100,7 @@ describe("Library Test", () => {
       )) as RangeOrderData[];
     else fail("user address not valid");
 
-    const expectedPrice = BigNumber.from("51223156983233948619");
+    const expectedPrice = BigNumber.from("50381188149442306669");
 
     if (results.length == 0) fail("No range order to check.");
     else if (results[0])
@@ -123,15 +123,11 @@ describe("Library Test", () => {
     else if (results[0])
       console.log(
         (
-          await gelatoRangeOrder.getFeeAdjustedMinReturn({
+          await gelatoRangeOrder.getMinReturn({
             pool: results[0].pool as string,
             zeroForOne: results[0].zeroForOne as boolean,
-            ejectDust: results[0].ejectDust,
             tickThreshold: results[0].tickThreshold as unknown as number,
             amountIn: results[0].amountIn,
-            minAmountOut: (results[0].zeroForOne
-              ? results[0].amount1Min
-              : results[0].amount0Min) as BigNumber,
             receiver: results[0].receiver,
             maxFeeAmount: ethers.constants.Zero,
           })
